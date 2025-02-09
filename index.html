@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Image Upscaling</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+    }
+    .container {
+      max-width: 600px;
+      margin: 0 auto;
+      text-align: center;
+    }
+    .upload-section, .progress-section, .result-section {
+      margin-bottom: 20px;
+    }
+    .progress-bar {
+      width: 100%;
+      background-color: #f3f3f3;
+      border-radius: 5px;
+      overflow: hidden;
+    }
+    .progress-bar-fill {
+      height: 20px;
+      background-color: #4caf50;
+      width: 0%;
+      transition: width 0.3s ease;
+    }
+    .result-section img {
+      max-width: 100%;
+      height: auto;
+      border: 1px solid #ddd;
+      border-radius: 5px;
+      margin-top: 10px;
+    }
+    .download-button {
+      margin-top: 10px;
+      padding: 10px 20px;
+      background-color: #4caf50;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    .download-button:disabled {
+      background-color: #ccc;
+      cursor: not-allowed;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Image Upscaling</h1>
+    <div class="upload-section">
+      <input type="file" id="image-upload" accept="image/*">
+      <button id="upload-button">Upload and Upscale</button>
+    </div>
+    <div class="progress-section">
+      <div class="progress-bar">
+        <div class="progress-bar-fill" id="progress-bar-fill"></div>
+      </div>
+      <p id="progress-text">0%</p>
+    </div>
+    <div class="result-section">
+      <img id="upscaled-image" src="" alt="Upscaled Image" style="display: none;">
+      <button id="download-button" class="download-button" disabled>Download Upscaled Image</button>
+    </div>
+  </div>
+
+  <script>
+    document.getElementById('upload-button').addEventListener('click', async () => {
+      const fileInput = document.getElementById('image-upload');
+      const file = fileInput.files[0];
+      if (!file) {
+        alert('Please select an image to upload.');
+        return;
+      }
+
+      const formData = new FormData();
+      formData.append('file', file);
+
+      try {
+        const response = await fetch('/upscale', {
+          method: 'POST',
+          body: formData,
+        });
+
+        if (!response.ok) {
+          throw new Error('Failed to upscale image.');
+        }
+
+        const result = await response.json();
+        document.getElementById('upscaled-image').src = result.image_url;
+        document.getElementById('upscaled-image').style.display = 'block';
+        document.getElementById('download-button').disabled = false;
+        document.getElementById('download-button').onclick = () => {
+          window.location.href = result.image_url;
+        };
+      } catch (error) {
+        console.error('Error:', error);
+        alert('An error occurred while upscaling the image.');
+      }
+    });
+  </script>
+</body>
+</html>
